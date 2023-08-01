@@ -1,0 +1,17 @@
+CREATE TABLE `dbname`.`weather_data` (
+  `datetime` DATETIME NOT NULL,
+  `temperature` DECIMAL(5,2) NULL DEFAULT NULL,
+  `feels_like` DECIMAL(5,2) NULL DEFAULT NULL,
+  `dew_point` DECIMAL(5,2) NULL DEFAULT NULL,
+  `humidity` INT NULL DEFAULT NULL,
+  `wind_speed` DECIMAL(5,2) NULL DEFAULT NULL,
+  `wind_gust` DECIMAL(5,2) NULL DEFAULT NULL,
+  `wind_direction` VARCHAR(8) NULL DEFAULT NULL,
+  `wind_direction_degrees` INT NULL DEFAULT NULL,
+  `uv_index` INT NULL DEFAULT NULL,
+  `solar_irradiance` DECIMAL(6,2) NULL DEFAULT NULL,
+  `precipitation` DECIMAL(5,2) NULL DEFAULT NULL,
+  `precipitation_accumulated` DECIMAL(5,2) NULL DEFAULT NULL,
+  `pressure` DECIMAL(5,2) NULL DEFAULT NULL,
+  `conditions` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`datetime`));
