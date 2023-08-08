@@ -47,7 +47,7 @@ def wxm_login(username, password):
     response = requests.post(url_login, payload, headers=headers)
 
     if response.status_code != 200:
-        print(f"Login failed with code: {response.statuscode}")
+        print(f"Login failed with code: {response.status_code}")
         exit()
 
     jsonData = response.json()
@@ -66,7 +66,7 @@ def wxm_logout(bearer_token):
     response = requests.post(url_logout, payload, headers=headers)
 
     if response.status_code != 205:
-        print(f"Logout failed with code: {response.statuscode}")
+        print(f"Logout failed with code: {response.status_code}")
 
 
 # GET Private HTTP Request
@@ -79,7 +79,7 @@ def wxm_private_request(device_id, bearer_token):
     response = requests.get(url_device, headers=headers)
 
     if response.status_code != 200:
-        print(f"Query failed with code: {response.statuscode}")
+        print(f"Query failed with code: {response.status_code}")
         wxm_logout(bearer_token)
         exit()
 
@@ -94,7 +94,7 @@ def wxm_public_request(hex_id, device_id):
     response = requests.get(url)
 
     if response.status_code != 200:
-        print(f"Query failed with code: {response.statuscode}")
+        print(f"Query failed with code: {response.status_code}")
         exit()
 
     # Get the data as a JSON Object
