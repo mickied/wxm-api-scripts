@@ -18,42 +18,24 @@ There are two methods to access weather station data from the WeatherXM API.
 
 #### __1. Public WeatherXM Explorer__
 Anyone can access data via the public WeatherXM explorer API.  New data accessed via this method is available about every 6 minutes.  
-To do this, navigate to the weather station at:  
-https://explorer.weatherxm.com  
-Once you select a station the address in the url bar should have two IDs after the main url like the following:
-https://explorer.weatherxm.com/#871969c99ffffff/6ebe4520-3c10-11ed-9972-4f669f2d96bd
-
-The first ID after the "#" is the Hex ID:
-* 871969c99ffffff
-
-The second ID is the device ID:
-* 6ebe4520-3c10-11ed-9972-4f669f2d96bd
-
-These two IDs must be entered into the constants near the top of the script:
+To do this, enter your weather station 3-word name into the constant near the top of the script:
 ``` python
 # WeatherXM Device Info
 # Leave the username and password fields blank if the public API is desired.
 WXM_USERNAME = ""
 WXM_PASSWORD = ""
-WXM_HEX_ID = "871969c99ffffff"
-WXM_DEVICE_ID = "6ebe4520-3c10-11ed-9972-4f669f2d96bd"
+WXM_STATION_NAME = "Stormy Basil Cirrocumulus"
 ```
 
 #### __2. Private WeatherXM Account__
 If you are a weather station owner with a WeatherXM account, your device data can be accessed with your username and password.  New data accessed via this method is availabel about every 3 minutes.  
-With this method the hex ID can be left blank.  A device ID is still required, however, it is __not__ the same as the Public WeatherXM Explorer device ID.  
-
-To find your private WeatherXM device ID, navigate to https://app.weatherxm.com, login, and click on your weather station.  In your url bar you will see an address like the following:  
-* app.weatherxm.com/devices/__*712245d1-78cb-22ea-264c-d7g3af301cb4*__/details  
-
-The number between "devices/" and "/details" is your personal device ID.  Enter this ID, along with your username and password, into the constant variables near the top of the script:
+Enter your weather station 3-word name, along with your username and password, into the constant variables near the top of the script:
 ``` python
 # WeatherXM Device Info
 # Leave the username and password fields blank if the public API is desired.
 WXM_USERNAME = "yourusername"
 WXM_PASSWORD = "yoursecretpassword1"
-WXM_HEX_ID = ""
-WXM_DEVICE_ID = "712245d1-78cb-22ea-264c-d7g3af301cb4"
+WXM_STATION_NAME = "Stormy Basil Cirrocumulus"
 ```
 ___IMPORTANT___  
 Note that while the secure HTTPS protocal is used and therefore your username and password IS encrypted when transmitted, it is NOT encrypted while at rest in this script on whatever machine you use to execute it.  Ideally WeatherXM would provide a way to generate a revocable API key with limited permission that could be used for this purpose.  As of yet, I am not aware of this ability.  Ensure you trust the machine you are using to execute this script and USE AT YOUR OWN RISK!  

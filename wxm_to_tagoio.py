@@ -5,8 +5,7 @@ from datetime import datetime as dt
 # Leave the username and password fields blank if the public API is desired.
 WXM_USERNAME = ""
 WXM_PASSWORD = ""
-WXM_HEX_ID = "871969c99ffffff"
-WXM_DEVICE_ID = "6ebe4520-3c10-11ed-9972-4f669f2d96bd"
+WXM_STATION_NAME = "Stormy Basil Cirrocumulus"
 
 # Create a Tago.io "Custom HTTPS" device and enter the token here.
 TAGOIO_DEVICE_TOKEN = ""
@@ -42,29 +41,19 @@ def get_tago_timestamp():
 
 
 def main():
-    if WXM_DEVICE_ID == "":
-        print("A WeatherXM device ID is required. Please follow the instructions in the readme to "
+    if WXM_STATION_NAME == "":
+        print("A WeatherXM station name is required. Please follow the instructions in the readme to "
               "add an ID to the script and try again.")
-        exit()
-
-    if TAGOIO_DEVICE_TOKEN == "":
-        print("A tago.io device token is required. Please follow the instructions in the readme to "
-              "add a device token to the script and try again.")
         exit()
 
     weatherxm_data = None
     if WXM_USERNAME != "" and WXM_PASSWORD != "":
         token = bf.wxm_login(WXM_USERNAME, WXM_PASSWORD)
-        weatherxm_data = bf.wxm_private_request(WXM_DEVICE_ID, token)
+        weatherxm_data = bf.wxm_private_request(WXM_STATION_NAME, token)
         bf.wxm_logout(token)
     else:
-        if WXM_HEX_ID == "":
-            print("A WeatherXM hex ID is required when using the public API. Please follow the "
-                  "instructions in the readme to add a hex ID to the script and try again.")
-            exit()
-
-        weatherxm_data = bf.wxm_public_request(
-            WXM_HEX_ID, WXM_DEVICE_ID)
+        station_IDs = bf.wxm_public_ids_from_name(WXM_STATION_NAME)
+        weatherxm_data = bf.wxm_public_request(station_IDs[0], station_IDs[1])
 
     # Compare timestamps from last dataset and current dataset and exit if they are the same.
     datetime_last = get_tago_timestamp()
