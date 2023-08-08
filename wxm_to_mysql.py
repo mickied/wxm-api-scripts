@@ -98,17 +98,17 @@ def main():
     # Uncomment to see the statement printed out for debugging.
     # print(sqlcmd)
 
-    # Connect to the database.
-    db = mysql.connector.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_DATABASE
-    )
-
-    # Attempt to execute the sql command on the database to insert the record.
     try:
+        # Connect to the database.
+        db = mysql.connector.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_DATABASE
+        )
+
+        # Attempt to execute the sql command on the database to insert the record.
         dbcursor = db.cursor()
         dbcursor.execute(sqlcmd)
         db.commit()
