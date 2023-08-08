@@ -116,12 +116,12 @@ Save when exiting and the cron job will start being executed.
 ### Windows Task Scheduler
 On Windows operating systems you can use the Task Scheduler to schedule the execution of Python scripts.  
 
-	Search for and open Task Scheduler.  
-	Create Task...  
-	Name the task.  
-	Create a new trigger, begin the task on a schedule, daily, every 1 day, repeat task every - manually type "3 minutes", for a duration of "indefinitely".  
-	Create a new action, action: "Start a program", "Programs/Script" input the path to python.exe, "Add Arguments" input the script file name, "Start in" input the path to where the script file is saved.  
-	Add any "Conditions" or "Settings" you prefer.
+Search for and open Task Scheduler.  
+Create Task...  
+Name the task.  
+Create a new trigger, begin the task on a schedule, daily, every 1 day, repeat task every - manually type "3 minutes", for a duration of "indefinitely".  
+Create a new action, action: "Start a program", "Programs/Script" input the path to python.exe, "Add Arguments" input the script file name, "Start in" input the path to where the script file is saved.  
+Add any "Conditions" or "Settings" you prefer.
 
 For example:  
 Path to Python: C:\Users\yourusername\AppData\Local\Programs\Python\Python311\python.exe  
