@@ -57,7 +57,10 @@ def main():
 
     # Compare timestamps from last dataset and current dataset and exit if they are the same.
     datetime_last = get_tago_timestamp()
-    datetime = dt.fromisoformat(weatherxm_data["timestamp"])
+    iso_datetime = weatherxm_data["timestamp"]
+    # The fromisoformat method in Python versions <= 3.10 cannot parse the Zulu "Z" specifier at the
+    # end of an ISO6801 time string, so replace it with "+00:00".
+    datetime = dt.fromisoformat(iso_datetime.replace('Z', '+00:00'))
     if datetime == datetime_last:
         print("Duplicate weather data received. Try again later.")
         exit()
