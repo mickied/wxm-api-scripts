@@ -8,7 +8,7 @@ Python of course.  [Python 3](https://www.python.org/downloads/) is required to 
 
 Additionally, use pip (Python Package Manager that should come with Python) to install the following Python libraries:
 ``` bash
-$ pip install requests json pytz
+pip install requests json
 ```
 
 ## Instructions
@@ -41,6 +41,7 @@ ___IMPORTANT___
 Note that while the secure HTTPS protocal is used and therefore your username and password IS encrypted when transmitted, it is NOT encrypted while at rest in this script on whatever machine you use to execute it.  Ideally WeatherXM would provide a way to generate a revocable API key with limited permission that could be used for this purpose.  As of yet, I am not aware of this ability.  Ensure you trust the machine you are using to execute this script and USE AT YOUR OWN RISK!  
 
 ### __wxm_to_tagoio.py Script__
+This script depends on the `base_functions.py` script. Ensure you place both scripts in the same location.  
 To send the data to a Tago.io device using this script a Tago.io device token is required.  Within the Tago.io admin login, create a "Custom HTTPS" device.  Then either generate a new token or use the default one created with the device.  Enter this token into the constant "TAGOIO_DEVICE_TOKEN".
 ``` python
 # Create a Tago.io "Custom HTTPS" device and enter the token here.
@@ -52,11 +53,12 @@ In order to prevent duplicate entries, this script first queries the Tago.io dev
 Any metrics you are not interested in can be commented out from the tago_payload.
 
 ### __wxm_to_mysql.py Script__
+This script depends on the `base_functions.py` script. Ensure you place both scripts in the same location.  
 This script can be used to send WeatherXM weather station data to a MySQL Server.  For convenience a SQL script for creating a compatable table is included (create_table.sql).  
 
-This script depends on the MySQL Connector which can be installed with the Python Package installer by running:
+This script depends on the MySQL Connector and the pytz timezone library which can both be installed with the Python Package installer by running:
 ``` bash
-$ pip install mysql-connector-python
+pip install mysql-connector-python pytz
 ```
 
 To be able to connect to your MySQL database be sure to fill in the following information near the top of the script:
@@ -72,7 +74,7 @@ DB_DATABASE = "dbname"
 No instructions are provided for how to properly setup a MySQL database server, enabled remote connections, create databases, or create tables.  
 
 ## Conversion Options
-If you wish to convert from the default WeatherXM units, this script provides the same alternative units as WeatherXM does in their app and web app.  You can enable these conversions near the top of the script.  
+If you wish to convert from the default WeatherXM units, this script provides some alternative units.  You can enable these conversions near the top of the script.  
 ``` python
 # Conversion Options
 C_TO_F = True
@@ -87,7 +89,7 @@ Additionally, converting from wind direction in degrees to cardinal directions i
 On Debian/Ubuntu systems, cron can be used to schedule the excution of the script.  
 Open a terminal and enter the following command to edit the cron table:
 ``` bash
-$ crontab -e
+crontab -e
 ```
 To run a script every 3 minutes add the following line:
 ``` bash
