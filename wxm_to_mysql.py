@@ -92,7 +92,6 @@ def main():
     # Uncomment to see the statement printed out for debugging.
     # print(sqlcmd)
 
-
     try:
         # Connect to the database.
         db = mysql.connector.connect(
