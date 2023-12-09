@@ -95,6 +95,7 @@ def wxm_private_request(name, bearer_token):
         device_name = str(device["name"])
 
         if str(name).lower() == device_name.lower():
+            device["current_weather"]["device_id"] = device["id"]
             return device["current_weather"]
 
     print(f"No station found with name: {name}")
@@ -142,3 +143,21 @@ def wxm_public_request(hex_id, device_id):
     # Get the data as a JSON Object
     jsonData = response.json()
     return jsonData["current_weather"]
+
+def wxm_device_info(device_id, bearer_token):
+    headers = {
+        'accept': 'application/json',
+        'Authorization': 'Bearer ' + bearer_token
+    }
+    url_device = base_url + f"/me/devices/{device_id}/info"
+    response = requests.get(url_device, headers=headers)
+
+    if response.status_code != 200:
+        print(f"Device info query failed with code: {response.status_code}")
+        wxm_logout(bearer_token)
+        exit()
+
+    # Get the data as a JSON Object
+    jsonData = response.json()
+
+    return jsonData["weather_station"]

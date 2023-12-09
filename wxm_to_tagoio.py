@@ -16,6 +16,13 @@ METERSPERSECOND_TO_MPH = False
 MM_TO_INCH = False
 HPA_TO_INHG = False
 
+# Additional Options
+
+# Set GET_DEVICE_INFO to True to get additional info from the weather station based on the device. For 
+# a WS1000 station this is only the battery state. For a WS2000 station this also includes the name of
+# the last Helium hotspot the data was transmitted through as well as the received signal strength of 
+# the transmission.
+GET_DEVICE_INFO = False
 
 tago_url = "https://api.tago.io/data"
 
@@ -50,6 +57,8 @@ def main():
     if WXM_USERNAME != "" and WXM_PASSWORD != "":
         token = bf.wxm_login(WXM_USERNAME, WXM_PASSWORD)
         weatherxm_data = bf.wxm_private_request(WXM_STATION_NAME, token)
+        if GET_DEVICE_INFO:
+            weatherxm_device_info = bf.wxm_device_info(weatherxm_data["device_id"], token)
         bf.wxm_logout(token)
     else:
         station_IDs = bf.wxm_public_ids_from_name(WXM_STATION_NAME)
@@ -120,8 +129,8 @@ def main():
         pressure = pressure_hPa
         pressure_unit = "hPa"
 
-    # Build the payload for Tago.io.
-    tago_payload = bf.json.dumps([
+    # Build the data structure for Tago.io.
+    tago_structure = [
         {
             "variable": "temperature",
             "value": f"{temperature:.2f}",
@@ -203,7 +212,36 @@ def main():
             "value": icon,
             "time": timestamp
         }
-    ])
+    ]
+
+    if GET_DEVICE_INFO:
+        tago_structure.append(
+            {
+                "variable": "bat_state",
+                "value": weatherxm_device_info["bat_state"],
+                "time": timestamp
+            }
+        )
+        if weatherxm_device_info["model"] == "WS2000": 
+           # The WS2000 (Helium) stations have two additional fields of interest, the name of the last hotspot
+           # the data was transmitted through and the received signal strength of that transmission.
+           tago_structure.append(
+               {
+                    "variable": "last_hs_name",
+                    "value": weatherxm_device_info["last_hs_name"],
+                    "time": timestamp
+                }
+           )
+           tago_structure.append(
+                {
+                    "variable": "last_tx_rssi",
+                    "value": weatherxm_device_info["last_tx_rssi"],
+                    "time": timestamp
+                }
+           )
+
+    # Convert the structure to a json formatted string for sending to Tago.io.
+    tago_payload = bf.json.dumps(tago_structure)
 
     tago_headers = {
         'device-token': TAGOIO_DEVICE_TOKEN,
