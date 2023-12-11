@@ -61,6 +61,11 @@ def main():
             weatherxm_device_info = bf.wxm_device_info(weatherxm_data["device_id"], token)
         bf.wxm_logout(token)
     else:
+        if GET_DEVICE_INFO:
+            print("Device info is only available from an owned device by logging in with a username and "
+                  "password. Please enter credentials or set GET_DEVICE_Info option to False.")
+            exit()
+
         station_IDs = bf.wxm_public_ids_from_name(WXM_STATION_NAME)
         weatherxm_data = bf.wxm_public_request(station_IDs[0], station_IDs[1])
 

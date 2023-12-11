@@ -84,6 +84,13 @@ HPA_TO_INHG = False
 ```
 Additionally, converting from wind direction in degrees to cardinal directions is provided by default and included as a seperate variable (wind_direction_cardinal).  While seeing the wind direction displayed in cardinal form is easier to interpret, having it in degrees is useful if you want to be able to show a directional arrow.  
 
+## Additional Options
+### Device Information
+Some additional information about the weather station is available if using a username and password. For WS1000 and WS2000 stations, the level of the battery can be read as either "ok" or "low".  For WS2000 stations only, the last Helium hotspot name and the last Helium received signal strength indication (rssi) is also available.  To get this information, set `GET_DEVICE_INFO` to `True`.
+``` python
+GET_DEVICE_INFO = False
+```
+
 ## Schedule Examples
 ### Cron
 On Debian/Ubuntu systems, cron can be used to schedule the excution of the script.  
