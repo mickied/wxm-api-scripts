@@ -82,7 +82,7 @@ def main():
         pressure_hPa) if HPA_TO_INHG else pressure_hPa
 
     # This is the sql command will all the values inserted with their formatters.
-    sqlcmd = ("INSERT INTO WeatherStationDL (datetime, temperature, feels_like, humidity, wind_speed, "
+    sqlcmd = ("INSERT INTO weather_data (datetime, temperature, feels_like, humidity, wind_speed, "
               "wind_gust, wind_direction, wind_direction_degrees, uv_index, precipitation, pressure, "
               "conditions, precipitation_accumulated, solar_irradiance, dew_point) "
               f"VALUES ('{timestamp}', {temperature:.2f}, {feels_like:.2f}, {humidity}, {wind_speed:.2f}, "
