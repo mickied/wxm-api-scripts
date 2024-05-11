@@ -1,5 +1,10 @@
 import requests
 import json
+import logging
+
+# Setup logger
+logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.DEBUG)
+
 
 # The private API urls.
 base_url = "https://api.weatherxm.com/api/v1"
@@ -47,7 +52,7 @@ def wxm_login(username, password):
     response = requests.post(url_login, payload, headers=headers)
 
     if response.status_code != 200:
-        print(f"Login failed with code: {response.status_code}")
+        logging.error(f"Login failed with code: {response.status_code}")
         exit()
 
     jsonData = response.json()
@@ -66,7 +71,7 @@ def wxm_logout(bearer_token):
     response = requests.post(url_logout, payload, headers=headers)
 
     if response.status_code != 205:
-        print(f"Logout failed with code: {response.status_code}")
+        logging.error(f"Logout failed with code: {response.status_code}")
 
 
 # GET Private HTTP Request
@@ -79,7 +84,7 @@ def wxm_private_request(name, bearer_token):
     response = requests.get(url_device, headers=headers)
 
     if response.status_code != 200:
-        print(f"Query failed with code: {response.status_code}")
+        logging.error(f"Query failed with code: {response.status_code}")
         wxm_logout(bearer_token)
         exit()
 
@@ -87,7 +92,7 @@ def wxm_private_request(name, bearer_token):
     jsonData = response.json()
     
     if not jsonData:
-        print("No stations associated with this account.")
+        logging.error("No stations associated with this account.")
         wxm_logout(bearer_token)
         exit()
 
@@ -98,7 +103,7 @@ def wxm_private_request(name, bearer_token):
             device["current_weather"]["device_id"] = device["id"]
             return device["current_weather"]
 
-    print(f"No station found with name: {name}")
+    logging.error(f"No station found with name: {name}")
     wxm_logout(bearer_token)
     exit()
 
@@ -110,14 +115,14 @@ def wxm_public_ids_from_name(name):
     response = requests.get(url)
 
     if response.status_code != 200:
-        print(f"Query failed with code: {response.status_code}")
+        logging.error(f"Query failed with code: {response.status_code}")
         exit()
 
     # Get the data as a JSON Object
     jsonData = response.json()
 
     if not jsonData["devices"]:
-        print(f"Could not find station name: {name}")
+        logging.error(f"Could not find station name: {name}")
         exit()
 
     queried_name = str(jsonData["devices"][0]["name"])
@@ -127,7 +132,7 @@ def wxm_public_ids_from_name(name):
         id = jsonData["devices"][0]["id"]
         return (hex, id)
     else:
-        print(f"Could not find station name: {name}")
+        logging.error(f"Could not find station name: {name}")
         exit()
 
 
@@ -137,7 +142,7 @@ def wxm_public_request(hex_id, device_id):
     response = requests.get(url)
 
     if response.status_code != 200:
-        print(f"Query failed with code: {response.status_code}")
+        logging.error(f"Query failed with code: {response.status_code}")
         exit()
 
     # Get the data as a JSON Object
@@ -153,7 +158,7 @@ def wxm_device_info(device_id, bearer_token):
     response = requests.get(url_device, headers=headers)
 
     if response.status_code != 200:
-        print(f"Device info query failed with code: {response.status_code}")
+        logging.error(f"Device info query failed with code: {response.status_code}")
         wxm_logout(bearer_token)
         exit()
 
