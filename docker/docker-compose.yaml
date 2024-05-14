@@ -1,0 +1,50 @@
+version: '3'
+services:
+  mysql-server:
+    image: mysql:8.3.0
+    container_name: mysqlserver
+    restart: always
+    ports:
+      - 6603:3306
+    volumes:
+      - ./volumes/mysql/data:/var/lib/mysql
+      - ./volumes/mysql/config:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE_NAME}
+      - MYSQL_USER=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+  grafana:
+    image: grafana/grafana:10.3.1
+    container_name: grafana
+    depends_on:
+      - mysql-server
+    restart: always
+    ports:
+      - 3000:3000 # Change first port as desired
+    user: ${USER_ID}
+    volumes:
+      #  - ./docker/volumes/grafana/config:/etc/grafana
+      - ./volumes/grafana/data:/var/lib/grafana
+      - ./volumes/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_INSTALL_PLUGINS=volkovlabs-echarts-panel
+      - MYSQL_DATABASE=${MYSQL_DATABASE_NAME}
+  wxm-retriever:
+    image: wxm-retriever:0.0.01
+    container_name: wxm-retriever
+    depends_on:
+      - mysql-server
+    restart: always
+    environment:
+      - WXM_USERNAME=${WXM_USERNAME}
+      - WXM_PASSWORD=${WXM_PASSWORD}
+      - WXM_STATIONS=${WEATHER_STATIONS}
+      - UPDATE_RATE_MINUTES=${UPDATE_RATE_MINUTES}
+      - MYSQL_DATABASE=${MYSQL_DATABASE_NAME}
+      - MYSQL_USER=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - C_TO_F=${C_TO_F}
+      - METERSPERSECOND_TO_MPH=${METERSPERSECOND_TO_MPH}
+      - MM_TO_INCH=${MM_TO_INCH}
+      - HPA_TO_INHG${HPA_TO_INHG}
