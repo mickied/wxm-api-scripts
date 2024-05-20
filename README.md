@@ -1,6 +1,8 @@
 # WeatherXM API Python Scripts
 A collection of scripts that use the [WeatherXM API](https://api.weatherxm.com/api/v1/docs/) to get weather station data for various purposes.  
 
+Additionally a [Dockerized setup with Grafana and MySQL Server](#Docker-Compose-with-Grafana-and-MySQL-Server) is avaiable.
+
 This repository is not affiliated with or endorsed by [WeatherXM](https://weatherxm.com/).
 
 ## Dependancies
@@ -118,3 +120,89 @@ For example:
 Path to Python: C:\Users\yourusername\AppData\Local\Programs\Python\Python311\python.exe  
 Script File Name: ./wxm_to_tagoio.py  
 Path to Location where Script is Saved: C:\path\to\scripts\
+
+# Docker Compose with Grafana and MySQL Server
+--Note that this is still a work in progress--  
+Docker Compose provides a relatively simple/automated way to setup the required components to collect WeatherXM station data and host your own MySQL database server and Grafana web server to store and visualize WeatherXM weather station data.  A default Weather Station dashboard is also included.  This should run on Windows, MacOS, and most Linux distros.  
+![Weather Dashboard Upper](assets/grafana_dashboard_upper.png)
+![Weather Dashboard Lower](assets/grafana_dashboard_lower.png)
+
+## Install Docker
+Docker is required to execute the Docker containers required for this application.  The process to install Docker is different on each platform.  Follow the [official Docker install documents](https://docs.docker.com/engine/install/) for how to install it on your system.
+
+### Clone the repo
+``` bash
+git clone https://github.com/mickied/wxm-api-scripts.git
+```
+
+### Prepare the `.env` File
+Navigate to the `docker` folder and edit the .env file.  This file contains configuration data necessary for setting up the various Docker containers.
+
+``` properties
+USER_ID=1000  # needs to be the value of "id -u"
+MYSQL_ROOT_PASSWORD=SuperSecretSquirrelPassword
+MYSQL_DATABASE_NAME=WeatherStations
+MYSQL_USERNAME=wxm_writer
+MYSQL_PASSWORD=wxm_writer1
+UPDATE_RATE_MINUTES=3  # Should be set to 3 if not using username/password and 1.5 if using username/password.
+WXM_USERNAME=
+WXM_PASSWORD=
+WEATHER_STATIONS='["Stormy Basil Cirrocumulus", "Able Midnight Uv"]'
+C_TO_F=True
+METERSPERSECOND_TO_MPH=True
+MM_TO_INCH=True
+HPA_TO_INHG=True
+```
+`USER_ID` - this field needs to be set to the numeric value assigned to the user running Docker compose.  For many this will likely be `1000` already, but you can find this value by executing `id -u` on your machine (note that for Windows this needs to be done in the WSL instance, NOT in Windows Powershell or Command Prompt).  
+`MYSQL_ROOT_PASSWORD` - the default password assigned to the root MySQL user.  Should to be set to something, but unless you want to login to MySQL Server, you probably won't need it again.
+`MYSQL_DATABASE_NAME` - the name assigned to the MySQL database that will store all the weather station data.  
+`MYSQL_USERNAME` - the MySQL user that will be used by the wxm-retriever container to insert data into the database.  
+`MYSQL_PASSWORD` - the password for the above MySQL user.  
+`UPDATE_RATE_MINUTES` - this is the rate at which the wxm-retriever container will check for updates from the WeatherXM API.  This should be set to 1/2 the update rate for the endpoint used.  The public data endpoint updates every 6 minutes, so the current default of 3 should be used.  The private data endpoint (used when a `WXM_USERNAME` and `WXM_PASSWORD` are entered) updates every 3 minutes so a value of 1.5 should be entered.  
+`WXM_USERNAME` - this should be left blank if you wish to obtain data from the public endpoint.  If you have a WeatherXM account with owned station(s) then you can enter your username here and the private enpoint will be used to obtain your weather data.  
+`WXM_PASSWORD` - the password for the above username.  Leave blank if you wish to obtain data from the public endpoint.  
+`WEATHER_STATIONS` - this is a list of weather stations you wish to log data for.  If using the public endpoint, any valid weather station name can be entered.  If using the private endpoint then the station(s) must be owned or followed by your account.  Two example stations are provided to show the required format.  
+`C_TO_F` - set to `True` if temperature in Farenheit is desired.  Set to `False` if Celcius is desired.  
+`METERSPERSECOND_TO_MPH` - set to `True` if wind speed in miles per hour is desired.  Set to `False` if meters per second is desired.  
+`MM_TO_INCH` - set to `True` if rain rate and accumulation in inches is desired.  Set to `False` if millimeters is desired.  
+`HPA_TO_INHG` - set to `True` if pressure in inches of mercury is desired.  Set to `False` if hectopascals is desired.  
+
+NOTE: A `False` entry uses WeatherXM's default unit while `True` applies a conversion.  Unit conversions can also be manually performed in Grafana.  
+
+### Create and Start the Docker Containers
+From the `docker` folder in this repo, execute the following command:
+``` bash
+docker compose up -d
+```
+This command will use the `docker-compose.yaml` file in this folder to find and download the required images then create, configure, and start the containers.  This may take a few minutes.  After the containers have been started, both the MySQL and Grafana containers will go through a provisioning process to setup the database, database connection, and weather dashboard.  This should take a few more minutes.  Once this process is complete, the data is saved locally in the `docker/volumes` folder structure so that it won't need to be recreated.  
+
+### Login to the Grafana Web Server
+The Grafana webserver is accessable through port 3000 (configurable from the `docker-compose.yaml` file, line 24).  If accessing the web server through a web browser on the same computer you can use the following address.  
+http://localhost:3000/  
+
+NOTE: If accessing the web server from a different computer on the same local network you'll need to enter the IP address of the machine that's hosting those services in place of `localhost`.  
+
+Grafana will prompt you to login.  Use `admin`/`admin` as the default username/password.  
+![Grafana Login](assets/grafana_login.png)  
+
+Grafana will then prompt you to create a new password.  
+![Grafana New Password](assets/grafana_update_password.png)  
+
+The welcome page will load.  Click the "Weather Station" dashboard.  
+![Grafana Welcome Page](assets/grafana_welcome.png)  
+
+### Change the Weather Station Dashboard Variables
+
+If the default stations were changed in the `.env` file, then the dashboard will show errors.  We need to change some dashboard variables so Grafana can query the station data from the database tables that have been automatically created for each station.  
+To do this, click the settings gear in the upper right hand bar.  
+![Grafana Toolbar](assets/grafana_dashboard_settings.png)  
+
+Click "Variables" from the menu on the left.  Then click the variable "WeatherStation".  
+![Grafana Dashboard Variables](assets/grafana_dashboard_variables.png)  
+
+Go to the "Custom Options" field.  Here you will enter your station name followed by a `:` and then the station name again but with underscores instead of spaces.  If you have more than one station then seperate each entry with a comma.  See the example provided.  
+Once complete, be sure to click "Apply" at the bottom of the page!  
+![Grafana Dashboard Variables Custom Options](assets/grafana_dashboard_variables_customopts.png)  
+
+Now you should be able to select your weather stations from the "Weather Station" dropdown list in the upper lefthand corner of the dashboard.  
+![Grafana Weather Station Selection](assets/grafana_select_ws.png)  
