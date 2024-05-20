@@ -132,7 +132,7 @@ Docker is required to execute the Docker containers required for this applicatio
 
 ### Clone the repo
 ``` bash
-git clone https://github.com/mickied/wxm-api-scripts.git
+git clone -b dockerized-with-grafana-and-mysql https://github.com/mickied/wxm-api-scripts.git
 ```
 
 ### Prepare the `.env` File
