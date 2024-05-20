@@ -1,4 +1,5 @@
 import os
+import signal
 import base_functions as bf
 from datetime import datetime as dt
 from datetime import timezone as tz
@@ -6,7 +7,7 @@ import time
 import mysql.connector
 
 # WeatherXM Device Info
-# Leave the username and password fields blank if the public API is desired.
+# DO NOT CHANGE! All these are read from the system environment variables set in the .env file!
 WXM_USERNAME = os.environ.get("WXM_USERNAME")
 WXM_PASSWORD = os.environ.get("WXM_PASSWORD")
 WXM_STATION_NAMES = bf.json.loads(os.environ.get("WXM_STATIONS"))
@@ -14,6 +15,7 @@ WXM_STATION_NAMES = bf.json.loads(os.environ.get("WXM_STATIONS"))
 UPDATE_RATE_SECONDS = 60 * int(os.environ.get("UPDATE_RATE_MINUTES"))
 
 # MySQL Database Info
+# DO NOT CHANGE! All these are read from the system environment variables set in the .env file!
 DB_HOST = "mysql-server"
 DB_PORT = "3306"
 DB_USER = os.environ.get("MYSQL_USER")
@@ -21,13 +23,28 @@ DB_PASSWORD = os.environ.get("MYSQL_PASSWORD")
 DB_DATABASE = os.environ.get("MYSQL_DATABASE")
 
 # Conversion Options
-C_TO_F = os.getenv('C_TO_F', 'False').lower in ('true', '1', 't')
-METERSPERSECOND_TO_MPH = os.getenv('METERSPERSECOND_TO_MPH', 'False').lower in ('true', '1', 't')
-MM_TO_INCH = os.getenv('MM_TO_INCH', 'False').lower in ('true', '1', 't')
-HPA_TO_INHG = os.getenv('HPA_TO_INHG', 'False').lower in ('true', '1', 't')
+# DO NOT CHANGE! All these are read from the system environment variables set in the .env file!
+C_TO_F = os.getenv('C_TO_F', 'False').lower() in ('true', '1', 't')
+METERSPERSECOND_TO_MPH = os.getenv('METERSPERSECOND_TO_MPH', 'False').lower() in ('true', '1', 't')
+MM_TO_INCH = os.getenv('MM_TO_INCH', 'False').lower() in ('true', '1', 't')
+HPA_TO_INHG = os.getenv('HPA_TO_INHG', 'False').lower() in ('true', '1', 't')
 
+# Create a signal handler to process a shutdown signal and shutdown the program only when it is sleeping (between updates).
+asleep = False
+def signal_handler(sig, frame):
+    bf.logging.critical("Shutdown signal received!")
+    while not asleep:
+        time.sleep(0.1)
+    exit(0)
+
+# Main function.
 def main():
-    while True:
+    # Catch shutdown signals.
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    runLoop = True
+    while runLoop:
         scanStartTime = time.monotonic()  # Get the time at the start of this scan.
 
         # Connect to the database.
@@ -40,8 +57,9 @@ def main():
                 database=DB_DATABASE
             )
         except Exception as e:
-            bf.logging.error('MySQL DB Connection Error: %s', e)
-            exit(1)
+            bf.logging.error('MySQL DB Connection Error: %s\n\tTrying again in 3 seconds.', e)
+            time.sleep(3)
+            continue
 
         for station in WXM_STATION_NAMES:
             weatherxm_data = None
@@ -156,7 +174,14 @@ def main():
         if sleepTime < 0:
             bf.logging.warning("Program process time took longer than the update rate time. Considering increasing the update rate time.")
         else:
-            time.sleep(sleepTime)
+            try:
+                global asleep
+                asleep = True
+                time.sleep(sleepTime)
+                asleep = False
+            except (SystemExit):
+                bf.logging.info("Shutting down...")
+                runLoop = False
 
 
 if __name__ == '__main__':
