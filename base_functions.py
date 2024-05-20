@@ -3,7 +3,7 @@ import json
 import logging
 
 # Setup logger
-logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)
 
 
 # The private API urls.
