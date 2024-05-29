@@ -154,10 +154,10 @@ MM_TO_INCH=True
 HPA_TO_INHG=True
 ```
 `USER_ID` - this field needs to be set to the numeric value assigned to the user running Docker compose.  For many this will likely be `1000` already, but you can find this value by executing `id -u` on your machine (note that for Windows this needs to be done in the WSL instance, NOT in Windows Powershell or Command Prompt).  
-`MYSQL_ROOT_PASSWORD` - the default password assigned to the root MySQL user.  Should to be set to something, but unless you want to login to MySQL Server, you probably won't need it again.
-`MYSQL_DATABASE_NAME` - the name assigned to the MySQL database that will store all the weather station data.  
-`MYSQL_USERNAME` - the MySQL user that will be used by the wxm-retriever container to insert data into the database.  
-`MYSQL_PASSWORD` - the password for the above MySQL user.  
+`MYSQL_ROOT_PASSWORD` - the default password assigned to the root MySQL user.  Should to be set to something, but unless you want to login to MySQL Server, you probably won't need it again.  MySQL restricts the root user to only be accessible from `localhost` by default, which in this case, is only within the Docker container.  
+`MYSQL_DATABASE_NAME` - the name assigned to the MySQL database that will store all the weather station data.  You can change this or leave it as the default.  
+`MYSQL_USERNAME` - the MySQL user that will be used by the wxm-retriever container to insert data into the database.  You can change this or leave it as the default.  
+`MYSQL_PASSWORD` - the password for the above MySQL user.  It's probably best to change this. It can be left as the default if you're behind a good firewall.  
 `UPDATE_RATE_MINUTES` - this is the rate at which the wxm-retriever container will check for updates from the WeatherXM API.  This should be set to 1/2 the update rate for the endpoint used.  The public data endpoint updates every 6 minutes, so the current default of 3 should be used.  The private data endpoint (used when a `WXM_USERNAME` and `WXM_PASSWORD` are entered) updates every 3 minutes so a value of 1.5 should be entered.  
 `WXM_USERNAME` - this should be left blank if you wish to obtain data from the public endpoint.  If you have a WeatherXM account with owned station(s) then you can enter your username here and the private enpoint will be used to obtain your weather data.  
 `WXM_PASSWORD` - the password for the above username.  Leave blank if you wish to obtain data from the public endpoint.  
@@ -206,3 +206,16 @@ Once complete, be sure to click "Apply" at the bottom of the page!
 
 Now you should be able to select your weather stations from the "Weather Station" dropdown list in the upper lefthand corner of the dashboard.  
 ![Grafana Weather Station Selection](assets/grafana_select_ws.png)  
+
+### Shutting Down the Containers
+These containers are set to restart unless they've been told to shut down.  This means that the containers should restart when the operating system starts (provided Docker is set to start up automatically which may not be the default setting in Docker for Windows) and they should also restart if any container has an issue that causes it to crash.  
+
+In order to shut down and remove the containers use:
+``` bash
+docker compose down
+```  
+
+Doing so does __not__ delete any of the user data associated with these containers.  
+
+### User Data
+User data (database data and any changes made to Grafana Dashboards or settings) is not stored in the containers but rather in Docker Volumes located within the `docker/volumes/grafana/data` and `docker/volumes/mysql/data` folders.  To delete this data simply remove these `data` folders.  They will be recreated again from scratch when using Docker Compose to start the containers.  
