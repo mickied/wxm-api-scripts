@@ -33,7 +33,7 @@ def get_tago_timestamp():
     query_response = bf.requests.get(tago_query, headers=tago_query_headers)
     tago_query_data = query_response.json()
     if query_response.status_code != 200:
-        print(f"Tago.io query failed with code: {query_response.status_code}")
+        bf.logging.error(f"Tago.io query failed with code: {query_response.status_code}")
         exit()
 
     # The iso8601 timetamps from Tago.io and WeatherXM are in different timezone formats so we need to
@@ -49,7 +49,7 @@ def get_tago_timestamp():
 
 def main():
     if WXM_STATION_NAME == "":
-        print("A WeatherXM station name is required. Please follow the instructions in the readme to "
+        bf.logging.error("A WeatherXM station name is required. Please follow the instructions in the readme to "
               "add an ID to the script and try again.")
         exit()
 
@@ -62,7 +62,7 @@ def main():
         bf.wxm_logout(token)
     else:
         if GET_DEVICE_INFO:
-            print("Device info is only available from an owned device by logging in with a username and "
+            bf.logging.error("Device info is only available from an owned device by logging in with a username and "
                   "password. Please enter credentials or set GET_DEVICE_Info option to False.")
             exit()
 
@@ -76,7 +76,7 @@ def main():
     # end of an ISO6801 time string, so replace it with "+00:00".
     datetime = dt.fromisoformat(iso_datetime.replace('Z', '+00:00'))
     if datetime == datetime_last:
-        print("Duplicate weather data received. Try again later.")
+        bf.logging.warn("Duplicate weather data received. Try again later.")
         exit()
 
     # Parse Data
@@ -256,7 +256,7 @@ def main():
     tago_response = bf.requests.post(
         tago_url, tago_payload, headers=tago_headers)
 
-    print(tago_response.text)
+    bf.logging.info(tago_response.text)
 
 
 if __name__ == '__main__':
