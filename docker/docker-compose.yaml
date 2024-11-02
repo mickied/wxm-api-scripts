@@ -30,7 +30,7 @@ services:
       - GF_INSTALL_PLUGINS=volkovlabs-echarts-panel
       - MYSQL_DATABASE=${MYSQL_DATABASE_NAME}
   wxm-retriever:
-    image: mickied/wxm-retriever:0.0.01
+    image: mickied/wxm-retriever:0.0.02
     container_name: wxm-retriever
     depends_on:
       - mysql-server
