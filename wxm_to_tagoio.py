@@ -30,7 +30,12 @@ tago_url = "https://api.tago.io/data"
 def get_tago_timestamp():
     tago_query = tago_url + "?query=last_item&variable=temperature"
     tago_query_headers = {'device-token': TAGOIO_DEVICE_TOKEN}
-    query_response = bf.requests.get(tago_query, headers=tago_query_headers)
+    try:
+        query_response = bf.requests.get(tago_query, headers=tago_query_headers, timeout=bf.REQUEST_TIMEOUT)
+    except bf.requests.exceptions.RequestException as e:
+        bf.logging.error(f"Tago.io query request failed: {e}")
+        exit()
+
     tago_query_data = query_response.json()
     if query_response.status_code != 200:
         bf.logging.error(f"Tago.io query failed with code: {query_response.status_code}")
@@ -253,10 +258,12 @@ def main():
         'Content-Type': 'application/json'
     }
 
-    tago_response = bf.requests.post(
-        tago_url, tago_payload, headers=tago_headers)
-
-    bf.logging.info(tago_response.text)
+    try:
+        tago_response = bf.requests.post(
+            tago_url, tago_payload, headers=tago_headers, timeout=bf.REQUEST_TIMEOUT)
+        bf.logging.info(tago_response.text)
+    except bf.requests.exceptions.RequestException as e:
+        bf.logging.error(f"Tago.io POST request failed: {e}")
 
 
 if __name__ == '__main__':

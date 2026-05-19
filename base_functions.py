@@ -10,6 +10,7 @@ logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s'
 base_url = "https://api.weatherxm.com/api/v1"
 url_login = base_url + "/auth/login"
 url_logout = base_url + "/auth/logout"
+REQUEST_TIMEOUT = 15
 
 
 # Conversion function for converting direction in degrees to a cardinal direction.
@@ -41,7 +42,7 @@ def hpa_to_inhg(hpa):
 
 
 # Login to WeatherXM
-def wxm_login(username, password):
+def wxm_login(username, password, timeout=REQUEST_TIMEOUT):
     payload = json.dumps(
         {"username": username, "password": password}
     )
@@ -49,7 +50,15 @@ def wxm_login(username, password):
         'accept': 'application/json',
         'Content-Type': 'application/json'
     }
-    response = requests.post(url_login, payload, headers=headers)
+
+    try:
+        response = requests.post(url_login, payload, headers=headers, timeout=timeout)
+    except requests.exceptions.Timeout:
+        logging.error(f"Login request timed out after {timeout} seconds")
+        exit()
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Login request failed: {e}")
+        exit()
 
     if response.status_code != 200:
         logging.error(f"Login failed with code: {response.status_code}")
@@ -60,7 +69,7 @@ def wxm_login(username, password):
 
 
 # Logout
-def wxm_logout(bearer_token):
+def wxm_logout(bearer_token, timeout=REQUEST_TIMEOUT):
     payload = json.dumps(
         {"accessToken": bearer_token}
     )
@@ -68,7 +77,12 @@ def wxm_logout(bearer_token):
         'accept': '*/*',
         'Content-Type': 'application/json'
     }
-    response = requests.post(url_logout, payload, headers=headers)
+
+    try:
+        response = requests.post(url_logout, payload, headers=headers, timeout=timeout)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Logout request failed: {e}")
+        return
 
     if response.status_code != 205:
         logging.error(f"Logout failed with code: {response.status_code}")
@@ -81,7 +95,12 @@ def wxm_private_request(name, bearer_token):
         'Authorization': 'Bearer ' + bearer_token
     }
     url_device = base_url + f"/me/devices"
-    response = requests.get(url_device, headers=headers)
+    try:
+        response = requests.get(url_device, headers=headers, timeout=REQUEST_TIMEOUT)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Device query request failed: {e}")
+        wxm_logout(bearer_token)
+        exit()
 
     if response.status_code != 200:
         logging.error(f"Query failed with code: {response.status_code}")
@@ -112,7 +131,11 @@ def wxm_private_request(name, bearer_token):
 def wxm_public_ids_from_name(name):
     url = base_url + f"/network/search?query={name}"
 
-    response = requests.get(url)
+    try:
+        response = requests.get(url, timeout=REQUEST_TIMEOUT)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Station search request failed: {e}")
+        exit()
 
     if response.status_code != 200:
         logging.error(f"Query failed with code: {response.status_code}")
@@ -139,7 +162,11 @@ def wxm_public_ids_from_name(name):
 # GET Public HTTP Request
 def wxm_public_request(hex_id, device_id):
     url = base_url + f"/cells/{hex_id}/devices/{device_id}"
-    response = requests.get(url)
+    try:
+        response = requests.get(url, timeout=REQUEST_TIMEOUT)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Public device request failed: {e}")
+        exit()
 
     if response.status_code != 200:
         logging.error(f"Query failed with code: {response.status_code}")
@@ -155,7 +182,12 @@ def wxm_device_info(device_id, bearer_token):
         'Authorization': 'Bearer ' + bearer_token
     }
     url_device = base_url + f"/me/devices/{device_id}/info"
-    response = requests.get(url_device, headers=headers)
+    try:
+        response = requests.get(url_device, headers=headers, timeout=REQUEST_TIMEOUT)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Device info request failed: {e}")
+        wxm_logout(bearer_token)
+        exit()
 
     if response.status_code != 200:
         logging.error(f"Device info query failed with code: {response.status_code}")
