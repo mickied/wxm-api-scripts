@@ -25,7 +25,7 @@ HPA_TO_INHG = True
 
 def main():
     if WXM_STATION_NAME == "":
-        print("A WeatherXM station name is required. Please follow the instructions in the readme to "
+        bf.logging.error("A WeatherXM station name is required. Please follow the instructions in the readme to "
               "add an ID to the script and try again.")
         exit()
 
@@ -89,8 +89,7 @@ def main():
               f"{wind_gust:.2f}, '{wind_direction_card}', {wind_direction_deg}, {uv_index}, {precipitation:.2f}, {pressure:.2f}, "
               f"'{conditions}', {precipitation_accumulated:.2f}, {solar_irradiance_wm2:.2f}, {dew_point:.2f})")
 
-    # Uncomment to see the statement printed out for debugging.
-    # print(sqlcmd)
+    bf.logging.debug(sqlcmd)
 
     try:
         # Connect to the database.
@@ -107,9 +106,9 @@ def main():
         dbcursor.execute(sqlcmd)
         db.commit()
     except Exception as e:
-        print('MySQL DB Error: ', e)
+        bf.logging.error(f"MySQL DB Error: {e}")
     else:
-        print(dbcursor.rowcount, "record inserted.")
+        bf.logging.info(f"{dbcursor.rowcount} record inserted.")
 
 
 if __name__ == '__main__':
